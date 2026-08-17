@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AWS Cloud Quest – Study Game</title>
+    <style>
+        /* ---------- RESET & BASE ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+            background: linear-gradient(145deg, #0b1a2e 0%, #0f212f 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            color: #e8edf3;
+        }
+
+        /* ---------- CARD CONTAINER ---------- */
+        .game-container {
+            max-width: 880px;
+            width: 100%;
+            background: rgba(18, 34, 50, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 2.5rem;
+            padding: 2rem 2rem 2.5rem;
+            box-shadow: 0 25px 50px -8px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            transition: all 0.2s ease;
+        }
+
+        /* ---------- HEADER ---------- */
+        .game-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
+            flex-wrap: wrap;
+        }
+
+        .game-header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+            background: linear-gradient(135deg, #f3b33d, #ff9900);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .game-header .badge {
+            margin-left: auto;
+            background: #1e3a5a;
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #b6d4f0;
+            border: 1px solid #2d4b6e;
+            letter-spacing: 0.3px;
+        }
+
+        /* ---------- SCREENS (show / hide) ---------- */
+        .screen {
+            display: none;
+            animation: fadeUp 0.35s ease;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeUp {
+            0% {
+                opacity: 0;
+                transform: translateY(14px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---------- HOME SCREEN ---------- */
+        .home .hero-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 0.5rem;
+        }
+
+        .home .hero-title span {
+            background: linear-gradient(135deg, #f3b33d, #ff9900);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .home p.sub {
+            font-size: 1.05rem;
+            color: #b6cee6;
+            max-width: 600px;
+            margin: 0.5rem 0 1.5rem;
+            line-height: 1.5;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0 2rem;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 1.2rem;
+            padding: 1.25rem 0.75rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(4px);
+        }
+
+        .feature-card h3 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #ffb347;
+        }
+
+        .feature-card p {
+            font-size: 0.9rem;
+            color: #b0cce5;
+            margin-top: 0.2rem;
+        }
+
+        .instructions-box {
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 1.2rem;
+            padding: 1.25rem 1.75rem;
+            margin: 1.25rem 0 1.75rem;
+            border-left: 4px solid #ff9900;
+        }
+
+        .instructions-box ol {
+            list-style: none;
+            counter-reset: step;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+        }
+
+        .instructions-box ol li {
+            counter-increment: step;
+            font-size: 0.95rem;
+            color: #d3e2f2;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .instructions-box ol li::before {
+            content: counter(step);
+            background: #ff9900;
+            color: #0b1a2e;
+            font-weight: 700;
+            font-size: 0.75rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #ff9900, #e88500);
+            border: none;
+            color: #0b1a2e;
+            font-weight: 700;
+            font-size: 1.2rem;
+            padding: 0.9rem 2.8rem;
+            border-radius: 60px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 8px 18px -6px rgba(255, 153, 0, 0.3);
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.02);
+            box-shadow: 0 12px 24px -8px rgba(255, 153, 0, 0.45);
+        }
+
+        .btn-primary:active {
+            transform: scale(0.97);
+        }
+
+        /* ---------- QUIZ SCREEN ---------- */
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quiz-header h2 {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #b6d4f0;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: #1e3a5a;
+            border-radius: 10px;
+            margin: 0.25rem 0 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #ff9900, #f3b33d);
+            border-radius: 10px;
+            transition: width 0.35s ease;
+        }
+
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: 600;
+            line-height: 1.4;
+            margin: 0.5rem 0 1.5rem;
+            color: #f0f6fe;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.9rem;
+            margin: 1.25rem 0;
+        }
+
+        @media (max-width: 600px) {
+            .answers-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .answer-btn {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1.5px solid rgba(255, 255, 255, 0.10);
+            border-radius: 1rem;
+            padding: 1rem 1.2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: #e8edf3;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: left;
+            line-height: 1.3;
+            backdrop-filter: blur(4px);
+        }
+
+        .answer-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 153, 0, 0.4);
+            transform: translateY(-2px);
+        }
+
+        .answer-btn:disabled {
+            cursor: default;
+            opacity: 0.75;
+        }
+
+        .answer-btn.correct {
+            background: #1f8b4c;
+            border-color: #2ecc71;
+            color: white;
+        }
+
+        .answer-btn.wrong {
+            background: #a1303a;
+            border-color: #e74c3c;
+            color: white;
+        }
+
+        .answer-btn.reveal-correct {
+            background: #1f8b4c;
+            border-color: #2ecc71;
+            color: white;
+        }
+
+        .explanation-box {
+            margin-top: 1.5rem;
+            padding: 1.25rem 1.5rem;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 1.2rem;
+            border-left: 4px solid #ff9900;
+            font-size: 0.98rem;
+            line-height: 1.5;
+            color: #d3e2f2;
+        }
+
+        .explanation-box strong {
+            color: #ffb347;
+            display: block;
+            margin-bottom: 0.3rem;
+        }
+
+        .quiz-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 1.5rem;
+        }
+
+        .btn-next {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #e8edf3;
+            padding: 0.7rem 2.2rem;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: none;
+        }
+
+        .btn-next:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ff9900;
+        }
+
+        /* ---------- RESULT SCREEN ---------- */
+        .result-screen {
+            text-align: center;
+            padding: 1rem 0;
+        }
+
+        .result-screen .trophy {
+            font-size: 4rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-screen h2 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .result-screen .score-display {
+            font-size: 2.8rem;
+            font-weight: 700;
+            color: #ffb347;
+            margin: 0.5rem 0 0.25rem;
+        }
+
+        .result-screen .score-display small {
+            font-size: 1.3rem;
+            font-weight: 400;
+            color: #b6cee6;
+        }
+
+        .result-screen .result-message {
+            font-size: 1.15rem;
+            color: #b6cee6;
+            margin: 0.5rem 0 2rem;
+        }
+
+        .btn-restart {
+            background: transparent;
+            border: 1.5px solid rgba(255, 255, 255, 0.2);
+            color: #e8edf3;
+            padding: 0.8rem 2.8rem;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 1.05rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-restart:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: #ff9900;
+        }
+
+        /* ---------- UTILITY ---------- */
+        .hide {
+            display: none !important;
+        }
+
+        .text-muted {
+            color: #8aaccc;
+        }
+
+        .mt-1 {
+            margin-top: 0.75rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container">
+
+        <!-- ===== HEADER ===== -->
+        <header class="game-header">
+            <h1>☁️ AWS Cloud Quest</h1>
+            <span class="badge">Study Game · 5 Q</span>
+        </header>
+
+        <!-- ===== HOME SCREEN ===== -->
+        <section id="homeScreen" class="screen active home">
+            <div class="hero-title">
+                Become an <span>AWS Cloud Practitioner</span>
+            </div>
+            <p class="sub">
+                Test your knowledge of the AWS Shared Responsibility Model, pricing,
+                IAM, global infrastructure, and elasticity — all in one interactive
+                quiz.
+            </p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <h3>5</h3>
+                    <p>Core Questions</p>
+                </div>
+                <div class="feature-card">
+                    <h3>⚡</h3>
+                    <p>Instant Feedback</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🏆</h3>
+                    <p>Final Score</p>
+                </div>
+            </div>
+
+            <div class="instructions-box">
+                <ol>
+                    <li>Click <strong>Start Game</strong></li>
+                    <li>Read each question carefully</li>
+                    <li>Select your answer</li>
+                    <li>Review the explanation</li>
+                    <li>See your final score</li>
+                </ol>
+            </div>
+
+            <button class="btn-primary" id="startBtn">Start Game</button>
+        </section>
+
+        <!-- ===== QUIZ SCREEN ===== -->
+        <section id="quizScreen" class="screen">
+            <div class="quiz-header">
+                <h2 id="questionNumber">Question 1 / 5</h2>
+                <span id="scoreBadge" style="font-weight:500; color:#b6d4f0;">0 correct</span>
+            </div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div id="questionText" class="question-text">Loading question…</div>
+
+            <div id="answersContainer" class="answers-grid"></div>
+
+            <div id="explanationContainer" class="explanation-box" style="display:none;">
+                <strong>💡 Explanation</strong>
+                <span id="explanationText"></span>
+            </div>
+
+            <div class="quiz-actions">
+                <button class="btn-next" id="nextBtn">Next Question →</button>
+            </div>
+        </section>
+
+        <!-- ===== RESULT SCREEN ===== -->
+        <section id="resultScreen" class="screen result-screen">
+            <div class="trophy">🎉</div>
+            <h2>Congratulations!</h2>
+            <div class="score-display">
+                <span id="finalScore">0</span> <small>/ 5</small>
+            </div>
+            <p class="result-message" id="resultMessage">Great job!</p>
+            <button class="btn-restart" id="restartBtn">↻ Play Again</button>
+        </section>
+
+    </div>
+
+    <script>
+        // ================================================================
+        //  QUESTION BANK – exactly as provided in the proposal
+        // ================================================================
+        const questions = [{
+            question: "Under the official AWS Shared Responsibility Model, which specific operational security task remains the sole structural responsibility of the customer?",
+            answers: [
+                "Managing the physical security of edge location data centers",
+                "Updating the microcode firmware on physical server host components",
+                "Configuring firewall security groups and patching guest operating systems",
+                "Replacing failing memory modules inside the hypervisor architecture"
+            ],
+            correct: 2,
+            explanation: "The customer is fully responsible for security in the cloud, which explicitly encompasses configuring network access rules, security groups, managing software deployments, and applying critical patches to the virtual machine guest operating system."
+        }, {
+            question: "Which core pillar of the official AWS Well-Architected Framework focuses primarily on minimizing unnecessary infrastructure expenses and maximizing operational return on investments?",
+            answers: [
+                "Performance Efficiency",
+                "Cost Optimization",
+                "Reliability Engineering",
+                "Operational Excellence"
+            ],
+            correct: 1,
+            explanation: "The Cost Optimization pillar provides structural guidelines to help organizations eliminate unneeded resource consumption, analyze historical spending patterns, and size dynamic compute deployments efficiently."
+        }, {
+            question: "Which security protocol represents an absolute best practice when establishing permissions for a newly configured identity or machine role within AWS Identity and Access Management?",
+            answers: [
+                "Granting comprehensive administrative access privileges to minimize system blockages",
+                "Applying the principle of least privilege to restrict actions to bare essentials",
+                "Utilizing a single root user account credentials across all developers",
+                "Avoiding the implementation of multi factor authentication to accelerate deployment speeds"
+            ],
+            correct: 1,
+            explanation: "The principle of least privilege ensures that an identity, machine profile, or user group is granted only the absolute minimum permissions strictly necessary to complete their required business functions."
+        }, {
+            question: "How are distinct AWS Availability Zones physically structured within a designated geographic region to guarantee high availability and operational fault tolerance?",
+            answers: [
+                "They are virtual logical partitions sharing identical physical facility infrastructure",
+                "They consist of isolated data centers located thousands of miles apart across separate continents",
+                "They represent one or more discrete physical data center facilities equipped with redundant power, cooling, and network backbones",
+                "They operate as decentralized software containers deployed on third party partner networks"
+            ],
+            correct: 2,
+            explanation: "Availability Zones are distinct physical locations composed of fully engineered data centers situated within an optimal regional distance to minimize latency while preventing concurrent localized disasters from disabling infrastructure."
+        }, {
+            question: "Which fundamental cloud computing characteristic describes the automated capacity of AWS infrastructure to scale resource allocations dynamically upward or downward in response to variable workload demands?",
+            answers: [
+                "Structural Rigidity",
+                "Vertical Monolithing",
+                "Elasticity",
+                "High Capital Investment"
+            ],
+            correct: 2,
+            explanation: "Elasticity represents the capability of cloud environments to automatically match real-time infrastructure resource provisioning with shifting application workloads, eliminating the need to manually provision surplus hardware overcapacity."
+        }];
+
+        // ================================================================
+        //  GAME STATE
+        // ================================================================
+        let currentQuestion = 0;
+        let score = 0;
+        let isAnswered = false;
+
+        // DOM refs
+        const homeScreen = document.getElementById('homeScreen');
+        const quizScreen = document.getElementById('quizScreen');
+        const resultScreen = document.getElementById('resultScreen');
+
+        const startBtn = document.getElementById('startBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const restartBtn = document.getElementById('restartBtn');
+
+        const questionNumber = document.getElementById('questionNumber');
+        const scoreBadge = document.getElementById('scoreBadge');
+        const progressFill = document.getElementById('progressFill');
+        const questionText = document.getElementById('questionText');
+        const answersContainer = document.getElementById('answersContainer');
+        const explanationContainer = document.getElementById('explanationContainer');
+        const explanationText = document.getElementById('explanationText');
+
+        const finalScore = document.getElementById('finalScore');
+        const resultMessage = document.getElementById('resultMessage');
+
+        // ================================================================
+        //  FUNCTIONS
+        // ================================================================
+
+        function showScreen(screen) {
+            [homeScreen, quizScreen, resultScreen].forEach(s => s.classList.remove('active'));
+            screen.classList.add('active');
+        }
+
+        function loadQuestion() {
+            isAnswered = false;
+            const q = questions[currentQuestion];
+            const total = questions.length;
+
+            questionNumber.textContent = `Question ${currentQuestion + 1} / ${total}`;
+            scoreBadge.textContent = `${score} correct`;
+            progressFill.style.width = `${(currentQuestion / total) * 100}%`;
+            questionText.textContent = q.question;
+
+            // Clear previous answers & explanation
+            answersContainer.innerHTML = '';
+            explanationContainer.style.display = 'none';
+            explanationText.textContent = '';
+            nextBtn.style.display = 'none';
+
+            // Render answer buttons
+            q.answers.forEach((answer, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-btn';
+                btn.textContent = answer;
+                btn.dataset.index = index;
+                btn.addEventListener('click', () => handleAnswer(index, btn));
+                answersContainer.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selectedIndex, clickedBtn) {
+            if (isAnswered) return;
+            isAnswered = true;
+
+            const q = questions[currentQuestion];
+            const allBtns = answersContainer.querySelectorAll('.answer-btn');
+
+            // Disable all buttons
+            allBtns.forEach(btn => btn.disabled = true);
+
+            // Highlight correct / wrong
+            allBtns.forEach((btn, idx) => {
+                if (idx === q.correct) {
+                    btn.classList.add('correct');
+                }
+                if (idx === selectedIndex && idx !== q.correct) {
+                    btn.classList.add('wrong');
+                }
+            });
+
+            // Update score
+            if (selectedIndex === q.correct) {
+                score++;
+                scoreBadge.textContent = `${score} correct`;
+            }
+
+            // Show explanation
+            explanationContainer.style.display = 'block';
+            explanationText.textContent = q.explanation;
+
+            // Show next button
+            nextBtn.style.display = 'inline-block';
+        }
+
+        function goToNext() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            showScreen(resultScreen);
+            progressFill.style.width = '100%';
+            finalScore.textContent = score;
+
+            const percent = (score / questions.length) * 100;
+            let msg = '';
+            if (percent === 100) {
+                msg = '🌟 Excellent! You are ready for the AWS Cloud Practitioner exam.';
+            } else if (percent >= 80) {
+                msg = '👏 Great job! Keep practicing to reach perfection.';
+            } else if (percent >= 60) {
+                msg = '📘 Good effort. Review the concepts and try again.';
+            } else {
+                msg = '🔁 Keep studying. Practice makes perfect!';
+            }
+            resultMessage.textContent = msg;
+        }
+
+        function resetGame() {
+            currentQuestion = 0;
+            score = 0;
+            isAnswered = false;
+            showScreen(homeScreen);
+        }
+
+        // ================================================================
+        //  EVENT BINDING
+        // ================================================================
+
+        startBtn.addEventListener('click', () => {
+            showScreen(quizScreen);
+            loadQuestion();
+        });
+
+        nextBtn.addEventListener('click', goToNext);
+
+        restartBtn.addEventListener('click', resetGame);
+
+        // ================================================================
+        //  INIT – ensure home is visible
+        // ================================================================
+        showScreen(homeScreen);
+    </script>
+
+</body>
+</html>
